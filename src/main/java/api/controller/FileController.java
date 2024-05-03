@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -27,7 +28,9 @@ public class FileController {
                     Upload a csv or xml file with animals to persist into database
                     """)
     @PostMapping("/upload")
-    public List<AnimalResponseDto> upload(@RequestParam MultipartFile file) {
+    public List<AnimalResponseDto> upload(
+            @RequestParam MultipartFile file
+    ) throws FileUploadException {
         return animalService.upload(file);
     }
 }
