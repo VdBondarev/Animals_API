@@ -17,7 +17,7 @@ public class TestAnimalsApiApplication {
     }
 
     public static void main(String[] args) {
-        SpringApplication.from(AnimalsApiApplication::main).with(TestAnimalsApiApplication.class).run(args);
+        SpringApplication.from(Application::main).with(TestAnimalsApiApplication.class).run(args);
     }
 
 }
