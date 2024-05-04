@@ -1,13 +1,15 @@
 package api.service.parser;
 
+import static api.constant.NumbersConstantsHolder.ZERO;
+
 import api.dto.AnimalCreateRequestDto;
 import api.mapper.AnimalMapper;
 import api.model.Animal;
 import api.model.Sex;
 import api.model.Type;
-import api.service.category.AnimalCategoryStrategy;
+import api.service.strategy.AnimalCategoryStrategy;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -19,39 +21,35 @@ public class FileParserImpl implements FileParser {
 
     @Override
     public List<Animal> parse(List<AnimalCreateRequestDto> requestDtos) {
-        return requestDtos
-                .stream()
-                .map(dto -> {
-                    if (isNotValid(dto)) {
-                        return null;
-                    }
-                    try {
-                        Animal animal = animalMapper.toModel(dto);
-                        Type type = Type.fromString(dto.getType());
-                        Sex sex = Sex.fromString(dto.getSex());
-                        Long categoryId = categoryStrategy
-                                .getAnimalCategoryService(dto.getCost())
-                                .getCategory(dto.getCost());
-                        animal.setType(type)
-                                .setSex(sex)
-                                .setCategoryId(categoryId);
-                        return animal;
-                    } catch (Exception e) {
-                        /**
-                         * just skipping non-valid animals
-                         * for example:
-                         * exception occurred when parsing type or sex etc.
-                         */
-                        return null;
-                    }
-                })
-                // filtering null animals and returning valid only
-                .filter(Objects::nonNull)
-                .toList();
+        List<Animal> animals = new ArrayList<>(requestDtos.size());
+        for (AnimalCreateRequestDto requestDto : requestDtos) {
+            if (isNotValid(requestDto)) {
+                continue;
+            }
+            try {
+                Type type = Type.fromString(requestDto.getType());
+                Sex sex = Sex.fromString(requestDto.getSex());
+                Long categoryId = categoryStrategy
+                        .getAnimalCategoryService(requestDto.getCost())
+                        .getCategory(requestDto.getCost());
+                Animal animal = animalMapper.toModel(requestDto)
+                        .setType(type)
+                        .setSex(sex)
+                        .setCategoryId(categoryId);
+                animals.add(animal);
+            } catch (Exception e) {
+                /**
+                 * skipping animals that caused exceptions
+                 * for example while parsing type or sex
+                 */
+                continue;
+            }
+        }
+        return animals;
     }
 
     private boolean isNotValid(AnimalCreateRequestDto dto) {
         return (dto.getName() == null || dto.getName().isEmpty())
-                && dto.getCost() <= 0 && dto.getWeight() <= 0;
+                && dto.getCost() <= ZERO && dto.getWeight() <= ZERO;
     }
 }

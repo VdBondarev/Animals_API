@@ -1,5 +1,6 @@
-package api.service.category;
+package api.service.strategy;
 
+import api.service.category.AnimalCategoryService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -15,6 +16,6 @@ public class AnimalCategoryStrategy {
                 .filter(service -> service.isApplicable(cost))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException(
-                        "Can't find category for cost " + cost));
+                        "Can't find a category for cost " + cost));
     }
 }

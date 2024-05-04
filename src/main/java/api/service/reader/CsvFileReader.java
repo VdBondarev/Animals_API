@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Component
 public class CsvFileReader implements FileReader {
+
     @Override
     public List<AnimalCreateRequestDto> readFromFile(
             MultipartFile file
