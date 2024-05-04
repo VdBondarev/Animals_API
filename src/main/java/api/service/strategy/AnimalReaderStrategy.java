@@ -13,9 +13,9 @@ public class AnimalReaderStrategy {
     public FileReader getFileReader(String contentType) {
         return fileReaders
                 .stream()
-                .filter(handler -> handler.isApplicable(contentType))
+                .filter(reader -> reader.isApplicable(contentType))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException(
-                        "Can't find a reader handler for content type " + contentType));
+                        "Can't find a reader for content type " + contentType));
     }
 }
