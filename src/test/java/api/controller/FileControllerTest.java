@@ -27,8 +27,8 @@ import org.springframework.web.context.WebApplicationContext;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class FileControllerTest {
-    private static final String UPLOAD_ENDPOINT = "/files/upload";
     protected static MockMvc mockMvc;
+    private static final String UPLOAD_ENDPOINT = "/files/upload";
     @Autowired
     private ObjectMapper objectMapper;
 
