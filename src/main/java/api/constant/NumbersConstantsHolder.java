@@ -7,7 +7,6 @@ public interface NumbersConstantsHolder {
     int THIRD_CATEGORY_RANGE_FROM = 41;
     int THIRD_CATEGORY_RANGE_TO = 60;
     int FOURTH_CATEGORY_RANGE = 61;
-    int REQUIRED_ARRAY_SIZE = 5;
     int ZERO = 0;
     int ONE = 1;
     Long TWO = 2L;

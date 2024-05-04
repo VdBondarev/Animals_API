@@ -1,5 +1,6 @@
 package api.service.reader;
 
+import static api.constant.FilesRelatedConstants.XML_CONTENT_TYPE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import api.dto.AnimalCreateRequestDto;
@@ -71,7 +72,7 @@ class XmlFileReaderTest {
 
         MultipartFile xmlFile;
         xmlFile = new MockMultipartFile("test.xml", "test.xml",
-                "application/xml", xmlContent.getBytes());
+                XML_CONTENT_TYPE, xmlContent.getBytes());
 
         List<AnimalCreateRequestDto> expected = List.of(
                 buddyAnimalRequest,

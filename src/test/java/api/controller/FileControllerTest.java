@@ -1,5 +1,7 @@
 package api.controller;
 
+import static api.constant.FilesRelatedConstants.CSV_CONTENT_TYPE;
+import static api.constant.FilesRelatedConstants.XML_CONTENT_TYPE;
 import static api.holder.LinksHolder.CSV_FILE_PATH;
 import static api.holder.LinksHolder.REMOVE_ALL_ANIMALS_FILE_PATH;
 import static api.holder.LinksHolder.WORD_FILE_PATH;
@@ -51,7 +53,7 @@ class FileControllerTest {
         byte[] fileContent = Files.readAllBytes(file.toPath());
 
         MockMultipartFile multipartFile = new MockMultipartFile(
-                "file", file.getName(), "text/csv", fileContent);
+                "file", file.getName(), CSV_CONTENT_TYPE, fileContent);
 
         MvcResult result = mockMvc.perform(
                         multipart(UPLOAD_ENDPOINT)
@@ -80,7 +82,7 @@ class FileControllerTest {
         byte[] fileContent = Files.readAllBytes(file.toPath());
 
         MockMultipartFile multipartFile = new MockMultipartFile(
-                "file", file.getName(), "application/xml", fileContent);
+                "file", file.getName(), XML_CONTENT_TYPE, fileContent);
 
         MvcResult result = mockMvc.perform(
                         multipart(UPLOAD_ENDPOINT)
