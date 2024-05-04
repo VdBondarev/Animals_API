@@ -1,5 +1,6 @@
 package api.service.reader;
 
+import static api.constant.FilesRelatedConstants.CSV_CONTENT_TYPE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import api.dto.AnimalCreateRequestDto;
@@ -45,7 +46,7 @@ class CsvFileReaderTest {
 
         MultipartFile csvFile;
         csvFile = new MockMultipartFile("test.csv", "test.csv",
-                "text/plain", csvContent.getBytes());
+                CSV_CONTENT_TYPE, csvContent.getBytes());
 
         List<AnimalCreateRequestDto> expected = List.of(
                 buddyAnimalRequest,

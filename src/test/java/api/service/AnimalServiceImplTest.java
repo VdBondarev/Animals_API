@@ -1,5 +1,7 @@
 package api.service;
 
+import static api.constant.FilesRelatedConstants.CSV_CONTENT_TYPE;
+import static api.constant.FilesRelatedConstants.XML_CONTENT_TYPE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -78,7 +80,7 @@ class AnimalServiceImplTest {
 
         MultipartFile csvFile;
         csvFile = new MockMultipartFile("test.csv", "test.csv",
-                "text/plain", csvContent.getBytes());
+                CSV_CONTENT_TYPE, csvContent.getBytes());
 
         AnimalCreateRequestDto buddyAnimalRequest =
                 createAnimalRequestDto("Buddy", "cat", "female", "51", "25");
@@ -151,7 +153,7 @@ class AnimalServiceImplTest {
 
         MultipartFile xmlFile;
         xmlFile = new MockMultipartFile("test.xml", "test.xml",
-                "text/xml", xmlContent.getBytes());
+                XML_CONTENT_TYPE, xmlContent.getBytes());
 
         AnimalCreateRequestDto buddyAnimalRequest =
                 createAnimalRequestDto("Buddy", "cat", "female", "51", "25");
