@@ -1,9 +1,19 @@
 package api.service;
 
+import static api.constant.AnimalConstantsFolder.CATEGORY_ID_FIELD;
+import static api.constant.AnimalConstantsFolder.COST_FIELD;
+import static api.constant.AnimalConstantsFolder.NAME_FIELD;
+import static api.constant.AnimalConstantsFolder.SEX_FIELD;
+import static api.constant.AnimalConstantsFolder.TYPE_FIELD;
+import static api.constant.AnimalConstantsFolder.WEIGHT_FIELD;
+
 import api.dto.AnimalCreateRequestDto;
 import api.dto.AnimalResponseDto;
+import api.dto.AnimalSearchParamsRequestDto;
 import api.mapper.AnimalMapper;
 import api.model.Animal;
+import api.model.Sex;
+import api.model.Type;
 import api.repository.AnimalRepository;
 import api.service.parser.FileParser;
 import api.service.reader.FileReader;
@@ -11,6 +21,9 @@ import api.service.strategy.AnimalReaderStrategy;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.apache.tomcat.util.http.fileupload.FileUploadException;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -35,5 +48,43 @@ public class AnimalServiceImpl implements AnimalService {
                 .stream()
                 .map(animalMapper::toResponseDto)
                 .toList();
+    }
+
+    @Override
+    public List<AnimalResponseDto> search(
+            AnimalSearchParamsRequestDto requestDto, Pageable pageable
+    ) {
+        ExampleMatcher matcher = ExampleMatcher.matching()
+                .withIgnoreNullValues()
+                .withIgnorePaths(COST_FIELD, WEIGHT_FIELD)
+                .withMatcher(CATEGORY_ID_FIELD, ExampleMatcher.GenericPropertyMatchers.exact())
+                .withMatcher(SEX_FIELD, ExampleMatcher.GenericPropertyMatchers.exact())
+                .withMatcher(TYPE_FIELD, ExampleMatcher.GenericPropertyMatchers.exact())
+                .withMatcher(
+                        NAME_FIELD, ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase()
+                );
+
+        Example<Animal> example = Example.of(
+                fromSearchParams(requestDto),
+                matcher
+        );
+        return animalRepository.findAll(example, pageable)
+                .stream()
+                .map(animalMapper::toResponseDto)
+                .toList();
+    }
+
+    private Animal fromSearchParams(AnimalSearchParamsRequestDto requestDto) {
+        return new Animal()
+                .setCategoryId(requestDto.categoryId())
+                .setSex(requestDto.sex() == null
+                        ? null
+                        : Sex.fromString(requestDto.sex())
+                )
+                .setType(requestDto.type() == null
+                        ? null
+                        : Type.fromString(requestDto.type())
+                )
+                .setName(requestDto.name());
     }
 }
