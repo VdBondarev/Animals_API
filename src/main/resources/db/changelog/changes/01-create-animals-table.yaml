@@ -1,0 +1,54 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-animals-table
+      author: VdBondarev
+      changes:
+        - createTable:
+            tableName: animals
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: type
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: sex
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: weight
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+              - column:
+                  name: cost
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+              - column:
+                  name: category_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: is_deleted
+                  type: BOOLEAN
+                  defaultValue: false
+                  constraints:
+                    nullable: false
+      rollback:
+        - dropTable:
+            tableName: users
