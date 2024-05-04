@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 public class AnimalReaderStrategy {
     private final List<FileReader> fileReaders;
 
-    public FileReader getReaderHandler(String contentType) {
+    public FileReader getFileReader(String contentType) {
         return fileReaders
                 .stream()
                 .filter(handler -> handler.isApplicable(contentType))

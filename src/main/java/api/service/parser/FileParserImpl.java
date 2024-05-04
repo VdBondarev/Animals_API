@@ -26,30 +26,33 @@ public class FileParserImpl implements FileParser {
             if (isNotValid(requestDto)) {
                 continue;
             }
-            try {
-                Type type = Type.fromString(requestDto.getType());
-                Sex sex = Sex.fromString(requestDto.getSex());
-                Long categoryId = categoryStrategy
-                        .getAnimalCategoryService(requestDto.getCost())
-                        .getCategory(requestDto.getCost());
-                Animal animal = animalMapper.toModel(requestDto)
-                        .setType(type)
-                        .setSex(sex)
-                        .setCategoryId(categoryId);
-                animals.add(animal);
-            } catch (Exception e) {
-                /**
-                 * skipping animals that caused exceptions
-                 * for example while parsing type or sex
-                 */
-                continue;
-            }
+            Type type = Type.fromString(requestDto.getType());
+            Sex sex = Sex.fromString(requestDto.getSex());
+            Long categoryId = categoryStrategy
+                    .getAnimalCategoryService(requestDto.getCost())
+                    .getCategory(requestDto.getCost());
+            Animal animal = animalMapper.toModel(requestDto)
+                    .setType(type)
+                    .setSex(sex)
+                    .setCategoryId(categoryId);
+            animals.add(animal);
         }
         return animals;
     }
 
     private boolean isNotValid(AnimalCreateRequestDto dto) {
-        return (dto.getName() == null || dto.getName().isEmpty())
-                && dto.getCost() <= ZERO && dto.getWeight() <= ZERO;
+        try {
+            boolean isNotValid = dto.getName() == null || dto.getName().isEmpty()
+                    || dto.getCost() <= ZERO || dto.getWeight() <= ZERO;
+            Type.fromString(dto.getType());
+            Sex.fromString(dto.getSex());
+            return isNotValid;
+        } catch (Exception e) {
+            /**
+             * expecting that if exception is occurred while parsing sex or type
+             * then the animal is not valid
+             */
+            return true;
+        }
     }
 }

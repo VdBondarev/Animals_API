@@ -27,7 +27,7 @@ public class AnimalServiceImpl implements AnimalService {
     @Transactional
     public List<AnimalResponseDto> upload(MultipartFile file) throws FileUploadException {
         String contentType = file.getContentType();
-        FileReader reader = readerStrategy.getReaderHandler(contentType);
+        FileReader reader = readerStrategy.getFileReader(contentType);
         List<AnimalCreateRequestDto> requestDtos = reader.readFromFile(file);
         List<Animal> parsedAnimals = fileParser.parse(requestDtos);
         animalRepository.saveAll(parsedAnimals);
