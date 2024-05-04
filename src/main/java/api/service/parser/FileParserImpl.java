@@ -43,6 +43,7 @@ public class FileParserImpl implements FileParser {
     private boolean isNotValid(AnimalCreateRequestDto dto) {
         try {
             boolean isNotValid = dto.getName() == null || dto.getName().isEmpty()
+                    || !Character.isUpperCase(dto.getName().charAt(ZERO))
                     || dto.getCost() <= ZERO || dto.getWeight() <= ZERO;
             Type.fromString(dto.getType());
             Sex.fromString(dto.getSex());
