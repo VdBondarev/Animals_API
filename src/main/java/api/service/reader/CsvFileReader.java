@@ -32,7 +32,7 @@ public class CsvFileReader implements FileReader {
                             .build();
             return build.parse();
         } catch (IOException e) {
-            throw new FileUploadException("Can't read from csv file");
+            throw new FileUploadException("Can't read from csv file", e);
         }
     }
 
