@@ -54,6 +54,11 @@ public class AnimalServiceImpl implements AnimalService {
     public List<AnimalResponseDto> search(
             AnimalSearchParamsRequestDto requestDto, Pageable pageable
     ) {
+        if (isNotValid(requestDto)) {
+            throw new IllegalArgumentException("""
+                    Searching should be done by at least 1 param
+                    """);
+        }
         ExampleMatcher matcher = ExampleMatcher.matching()
                 .withIgnoreNullValues()
                 .withIgnorePaths(COST_FIELD, WEIGHT_FIELD)
@@ -72,6 +77,15 @@ public class AnimalServiceImpl implements AnimalService {
                 .stream()
                 .map(animalMapper::toResponseDto)
                 .toList();
+    }
+
+    private boolean isNotValid(AnimalSearchParamsRequestDto requestDto) {
+        return requestDto == null || (
+                requestDto.categoryId() == null
+                && (requestDto.name() == null || requestDto.name().isEmpty())
+                && (requestDto.sex() == null || requestDto.sex().isEmpty())
+                && (requestDto.type() == null || requestDto.type().isEmpty())
+            );
     }
 
     private Animal fromSearchParams(AnimalSearchParamsRequestDto requestDto) {

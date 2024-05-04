@@ -1,11 +1,14 @@
 package api.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import api.dto.AnimalCreateRequestDto;
 import api.dto.AnimalResponseDto;
+import api.dto.AnimalSearchParamsRequestDto;
 import api.mapper.AnimalMapper;
 import api.model.Animal;
 import api.model.Sex;
@@ -15,17 +18,22 @@ import api.service.parser.FileParser;
 import api.service.reader.CsvFileReader;
 import api.service.reader.XmlFileReader;
 import api.service.strategy.AnimalReaderStrategy;
-import liquibase.changelog.filter.ActuallyExecutedChangeSetFilter;
+import java.util.List;
 import org.apache.tomcat.util.http.fileupload.FileUploadException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
-import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
 class AnimalServiceImplTest {
@@ -39,7 +47,23 @@ class AnimalServiceImplTest {
     private AnimalRepository animalRepository;
     @InjectMocks
     private AnimalServiceImpl animalService;
+    private Animal buddyAnimal;
+    private Animal kittyAnimal;
+    private AnimalResponseDto buddyResponseDto;
+    private AnimalResponseDto kittyResponseDto;
 
+    @BeforeEach
+    void setUp() {
+        buddyAnimal = createAnimal(
+                1L, "Buddy", "cat", "female", 51, 25, 2L
+        );
+        kittyAnimal = createAnimal(
+                2L, "Kitty", "dog", "male", 33, 111, 4L
+        );
+
+        buddyResponseDto = fromAnimal(buddyAnimal);
+        kittyResponseDto = fromAnimal(kittyAnimal);
+    }
 
     @Test
     @DisplayName("Verify that upload() method works fine for csv file")
@@ -65,24 +89,23 @@ class AnimalServiceImplTest {
         List<AnimalCreateRequestDto> expectedRequestList;
         expectedRequestList = List.of(buddyAnimalRequest, kittyAnimalRequest);
 
-        Animal buddy = fromRequestDto(buddyAnimalRequest);
-        Animal kitty = fromRequestDto(kittyAnimalRequest);
-
-        List<Animal> expectedAnimalList = List.of(buddy, kitty);
+        List<Animal> expectedAnimalList;
+        expectedAnimalList = List.of(buddyAnimal, kittyAnimal);
 
         CsvFileReader mockedFileReader = mock(CsvFileReader.class);
 
-        AnimalResponseDto buddyResponseDto = fromAnimal(buddy);
-        AnimalResponseDto kittyResponseDto = fromAnimal(kitty);
+        AnimalResponseDto buddyResponseDto = fromAnimal(buddyAnimal);
+        AnimalResponseDto kittyResponseDto = fromAnimal(kittyAnimal);
 
-        List<AnimalResponseDto> expected = List.of(buddyResponseDto, kittyResponseDto);
+        List<AnimalResponseDto> expected;
+        expected = List.of(buddyResponseDto, kittyResponseDto);
 
         when(readerStrategy.getFileReader(csvFile.getContentType())).thenReturn(mockedFileReader);
         when(mockedFileReader.readFromFile(csvFile)).thenReturn(expectedRequestList);
         when(fileParser.parse(expectedRequestList)).thenReturn(expectedAnimalList);
         when(animalRepository.saveAll(expectedAnimalList)).thenReturn(expectedAnimalList);
-        when(animalMapper.toResponseDto(buddy)).thenReturn(buddyResponseDto);
-        when(animalMapper.toResponseDto(kitty)).thenReturn(kittyResponseDto);
+        when(animalMapper.toResponseDto(buddyAnimal)).thenReturn(buddyResponseDto);
+        when(animalMapper.toResponseDto(kittyAnimal)).thenReturn(kittyResponseDto);
 
         List<AnimalResponseDto> actual = animalService.upload(csvFile);
 
@@ -139,24 +162,23 @@ class AnimalServiceImplTest {
         List<AnimalCreateRequestDto> expectedRequestList;
         expectedRequestList = List.of(buddyAnimalRequest, kittyAnimalRequest);
 
-        Animal buddy = fromRequestDto(buddyAnimalRequest);
-        Animal kitty = fromRequestDto(kittyAnimalRequest);
-
-        List<Animal> expectedAnimalList = List.of(buddy, kitty);
+        List<Animal> expectedAnimalList;
+        expectedAnimalList = List.of(buddyAnimal, kittyAnimal);
 
         XmlFileReader mockedFileReader = mock(XmlFileReader.class);
 
-        AnimalResponseDto buddyResponseDto = fromAnimal(buddy);
-        AnimalResponseDto kittyResponseDto = fromAnimal(kitty);
+        AnimalResponseDto buddyResponseDto = fromAnimal(buddyAnimal);
+        AnimalResponseDto kittyResponseDto = fromAnimal(kittyAnimal);
 
-        List<AnimalResponseDto> expected = List.of(buddyResponseDto, kittyResponseDto);
+        List<AnimalResponseDto> expected;
+        expected = List.of(buddyResponseDto, kittyResponseDto);
 
         when(readerStrategy.getFileReader(xmlFile.getContentType())).thenReturn(mockedFileReader);
         when(mockedFileReader.readFromFile(xmlFile)).thenReturn(expectedRequestList);
         when(fileParser.parse(expectedRequestList)).thenReturn(expectedAnimalList);
         when(animalRepository.saveAll(expectedAnimalList)).thenReturn(expectedAnimalList);
-        when(animalMapper.toResponseDto(buddy)).thenReturn(buddyResponseDto);
-        when(animalMapper.toResponseDto(kitty)).thenReturn(kittyResponseDto);
+        when(animalMapper.toResponseDto(buddyAnimal)).thenReturn(buddyResponseDto);
+        when(animalMapper.toResponseDto(kittyAnimal)).thenReturn(kittyResponseDto);
 
         List<AnimalResponseDto> actual = animalService.upload(xmlFile);
 
@@ -164,7 +186,51 @@ class AnimalServiceImplTest {
     }
 
     @Test
-    void search() {
+    @DisplayName("Verify that search() works fine with valid params")
+    void search_ValidParams_ReturnsValidResponse() {
+        AnimalSearchParamsRequestDto paramsRequestDto =
+                new AnimalSearchParamsRequestDto(null, "cat", null, null);
+
+        PageRequest pageable = PageRequest.of(0, 5);
+        Page<Animal> page = new PageImpl<>(
+                List.of(buddyAnimal),
+                pageable,
+                List.of(buddyAnimal).size());
+
+        AnimalResponseDto expected = buddyResponseDto;
+
+        when(animalRepository.findAll(any(Example.class), any(Pageable.class))).thenReturn(page);
+        when(animalMapper.toResponseDto(buddyAnimal)).thenReturn(expected);
+
+        List<AnimalResponseDto> expectedList = List.of(expected);
+
+        List<AnimalResponseDto> actualList = animalService.search(paramsRequestDto, pageable);
+
+        assertEquals(expectedList, actualList);
+        assertEquals(expected, actualList.get(0));
+    }
+
+    @Test
+    @DisplayName("Verify that search() throws an exception when passing non-valid params")
+    void search_NullPassedParams_ThrowsException() {
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> animalService.search(null, PageRequest.of(0, 5)));
+
+        String expected = """
+                Searching should be done by at least 1 param
+                """;
+        String actual = exception.getMessage();
+
+        assertEquals(expected, actual);
+
+        exception = assertThrows(IllegalArgumentException.class, () -> animalService.search(
+                new AnimalSearchParamsRequestDto(null, null, null, null),
+                PageRequest.of(0, 5))
+        );
+
+        actual = exception.getMessage();
+
+        assertEquals(expected, actual);
     }
 
     private AnimalCreateRequestDto createAnimalRequestDto(
@@ -182,15 +248,6 @@ class AnimalServiceImplTest {
                 .setWeight(Integer.parseInt(weight));
     }
 
-    private Animal fromRequestDto(AnimalCreateRequestDto requestDto) {
-        return new Animal()
-                .setCost(requestDto.getCost())
-                .setName(requestDto.getName())
-                .setType(Type.fromString(requestDto.getType()))
-                .setSex(Sex.fromString(requestDto.getSex()))
-                .setWeight(requestDto.getWeight());
-    }
-
     private AnimalResponseDto fromAnimal(Animal animal) {
         return new AnimalResponseDto(
                 animal.getId(),
@@ -202,62 +259,16 @@ class AnimalServiceImplTest {
                 animal.getCategoryId()
         );
     }
+
+    private Animal createAnimal(
+            long id, String name, String type, String sex, int weight, int cost, Long categoryId) {
+        return new Animal()
+                .setCategoryId(categoryId)
+                .setId(id)
+                .setType(Type.fromString(type))
+                .setSex(Sex.fromString(sex))
+                .setName(name)
+                .setWeight(weight)
+                .setCost(cost);
+    }
 }
-/**
- *  private final AnimalRepository animalRepository;
- *     private final AnimalMapper animalMapper;
- *     private final AnimalReaderStrategy readerStrategy;
- *     private final FileParser fileParser;
- *
- *     @Override
- *     @Transactional
- *     public List<AnimalResponseDto> upload(MultipartFile file) throws FileUploadException {
- *         String contentType = file.getContentType();
- *         FileReader reader = readerStrategy.getFileReader(contentType);
- *         List<AnimalCreateRequestDto> requestDtos = reader.readFromFile(file);
- *         List<Animal> parsedAnimals = fileParser.parse(requestDtos);
- *         animalRepository.saveAll(parsedAnimals);
- *         return parsedAnimals
- *                 .stream()
- *                 .map(animalMapper::toResponseDto)
- *                 .toList();
- *     }
- *
- *     @Override
- *     public List<AnimalResponseDto> search(
- *             AnimalSearchParamsRequestDto requestDto, Pageable pageable
- *     ) {
- *         ExampleMatcher matcher = ExampleMatcher.matching()
- *                 .withIgnoreNullValues()
- *                 .withIgnorePaths(COST_FIELD, WEIGHT_FIELD)
- *                 .withMatcher(CATEGORY_ID_FIELD, ExampleMatcher.GenericPropertyMatchers.exact())
- *                 .withMatcher(SEX_FIELD, ExampleMatcher.GenericPropertyMatchers.exact())
- *                 .withMatcher(TYPE_FIELD, ExampleMatcher.GenericPropertyMatchers.exact())
- *                 .withMatcher(
- *                         NAME_FIELD, ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase()
- *                 );
- *
- *         Example<Animal> example = Example.of(
- *                 fromSearchParams(requestDto),
- *                 matcher
- *         );
- *         return animalRepository.findAll(example, pageable)
- *                 .stream()
- *                 .map(animalMapper::toResponseDto)
- *                 .toList();
- *     }
- *
- *     private Animal fromSearchParams(AnimalSearchParamsRequestDto requestDto) {
- *         return new Animal()
- *                 .setCategoryId(requestDto.categoryId())
- *                 .setSex(requestDto.sex() == null
- *                         ? null
- *                         : Sex.fromString(requestDto.sex())
- *                 )
- *                 .setType(requestDto.type() == null
- *                         ? null
- *                         : Type.fromString(requestDto.type())
- *                 )
- *                 .setName(requestDto.name());
- *     }
- */
