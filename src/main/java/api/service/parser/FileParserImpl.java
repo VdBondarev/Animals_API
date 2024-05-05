@@ -5,8 +5,8 @@ import static api.constant.NumbersConstantsHolder.ZERO;
 import api.dto.AnimalCreateRequestDto;
 import api.mapper.AnimalMapper;
 import api.model.Animal;
-import api.model.Sex;
-import api.model.Type;
+import api.model.enums.Sex;
+import api.model.enums.Type;
 import api.service.strategy.AnimalCategoryStrategy;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,37 +23,41 @@ public class FileParserImpl implements FileParser {
     public List<Animal> parse(List<AnimalCreateRequestDto> requestDtos) {
         List<Animal> animals = new ArrayList<>(requestDtos.size());
         for (AnimalCreateRequestDto requestDto : requestDtos) {
-            if (isNotValid(requestDto)) {
-                continue;
+            if (isValid(requestDto)) {
+                Type type = Type.fromString(requestDto.getType());
+                Sex sex = Sex.fromString(requestDto.getSex());
+                Long categoryId = categoryStrategy
+                        .getAnimalCategoryService(requestDto.getCost())
+                        .getCategory(requestDto.getCost());
+                Animal animal = animalMapper.toModel(requestDto)
+                        .setType(type)
+                        .setSex(sex)
+                        .setCategoryId(categoryId);
+                animals.add(animal);
             }
-            Type type = Type.fromString(requestDto.getType());
-            Sex sex = Sex.fromString(requestDto.getSex());
-            Long categoryId = categoryStrategy
-                    .getAnimalCategoryService(requestDto.getCost())
-                    .getCategory(requestDto.getCost());
-            Animal animal = animalMapper.toModel(requestDto)
-                    .setType(type)
-                    .setSex(sex)
-                    .setCategoryId(categoryId);
-            animals.add(animal);
         }
         return animals;
     }
 
-    private boolean isNotValid(AnimalCreateRequestDto dto) {
+    private boolean isValid(AnimalCreateRequestDto requestDto) {
         try {
-            boolean isNotValid = dto.getName() == null || dto.getName().isEmpty()
-                    || !Character.isUpperCase(dto.getName().charAt(ZERO))
-                    || dto.getCost() <= ZERO || dto.getWeight() <= ZERO;
-            Type.fromString(dto.getType());
-            Sex.fromString(dto.getSex());
-            return isNotValid;
+            boolean isValid = requestDto != null
+                    && requestDto.getName() != null
+                    && !requestDto.getName().isEmpty()
+                    && Character.isUpperCase(requestDto.getName().charAt(ZERO))
+                    && requestDto.getCost() > ZERO
+                    && requestDto.getWeight() > ZERO;
+            Type.fromString(requestDto.getType());
+            Sex.fromString(requestDto.getSex());
+            return isValid;
         } catch (Exception e) {
             /**
-             * expecting that if exception is occurred while parsing sex or type
-             * then the animal is not valid
+             * if exception is thrown, the animal is not valid
+             * for example:
+             * some field is null
+             * or type or sex of the animal is not present in enum
              */
-            return true;
+            return false;
         }
     }
 }

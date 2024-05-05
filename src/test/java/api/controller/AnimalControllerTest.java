@@ -8,8 +8,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import api.dto.AnimalResponseDto;
 import api.dto.AnimalSearchParamsRequestDto;
-import api.model.Sex;
-import api.model.Type;
+import api.model.enums.Sex;
+import api.model.enums.Type;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;

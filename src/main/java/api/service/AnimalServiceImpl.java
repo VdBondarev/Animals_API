@@ -12,8 +12,8 @@ import api.dto.AnimalResponseDto;
 import api.dto.AnimalSearchParamsRequestDto;
 import api.mapper.AnimalMapper;
 import api.model.Animal;
-import api.model.Sex;
-import api.model.Type;
+import api.model.enums.Sex;
+import api.model.enums.Type;
 import api.repository.AnimalRepository;
 import api.service.parser.FileParser;
 import api.service.reader.FileReader;
@@ -39,6 +39,12 @@ public class AnimalServiceImpl implements AnimalService {
     @Override
     @Transactional
     public List<AnimalResponseDto> upload(MultipartFile file) throws FileUploadException {
+        if (file.isEmpty()) {
+            throw new FileUploadException("""
+                    File is empty
+                    Upload another one
+                    """);
+        }
         String contentType = file.getContentType();
         FileReader reader = readerStrategy.getFileReader(contentType);
         List<AnimalCreateRequestDto> requestDtos = reader.readFromFile(file);

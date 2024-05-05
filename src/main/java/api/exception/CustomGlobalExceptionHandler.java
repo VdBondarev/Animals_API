@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -45,6 +46,13 @@ public class CustomGlobalExceptionHandler extends ResponseEntityExceptionHandler
     @ExceptionHandler(IllegalArgumentException.class)
     protected ResponseEntity<Object> handleIllegalArgumentException(
             IllegalArgumentException ex, WebRequest request) {
+        Map<String, Object> body = getBody(ex, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(FileUploadException.class)
+    protected ResponseEntity<Object> handleFileUploadException(
+            FileUploadException ex, WebRequest request) {
         Map<String, Object> body = getBody(ex, HttpStatus.BAD_REQUEST);
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
