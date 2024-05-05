@@ -1,6 +1,8 @@
 package api.model;
 
 import api.annotation.StartsWithCapital;
+import api.model.enums.Sex;
+import api.model.enums.Type;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;

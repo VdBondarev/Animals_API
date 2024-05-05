@@ -1,4 +1,4 @@
-package api.model;
+package api.model.enums;
 
 public enum Sex {
     MALE,

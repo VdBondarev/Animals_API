@@ -1,7 +1,7 @@
 package api.dto;
 
-import api.model.Sex;
-import api.model.Type;
+import api.model.enums.Sex;
+import api.model.enums.Type;
 
 public record AnimalResponseDto(
         Long id,

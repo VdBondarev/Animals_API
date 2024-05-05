@@ -1,4 +1,8 @@
 # DB config
+# you can just rename it to .env and use these credentials
+# or put yours
+
+
 POSTGRESQL_PASSWORD=password
 POSTGRESQL_DOCKER_PORT=5432
 POSTGRESQL_LOCAL_PORT=5433

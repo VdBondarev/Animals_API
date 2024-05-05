@@ -14,7 +14,6 @@ Welcome to ANIMALS API made using Spring Boot.
 ## Testing
 
 - **API has both unit and integrational testing.**
-- **Test coverage - 88%.**
 
 ## Technologies used
 
